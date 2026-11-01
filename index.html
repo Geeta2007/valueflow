@@ -1,0 +1,206 @@
+<title> ValueFlow </title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=DM+Sans:wght@400;500;700&display=swap">
+<link rel="stylesheet" href="style.css">
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <svg class="logo" viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r="19" fill="var(--accent)"/>
+        <circle cx="20" cy="20" r="14" fill="none" stroke="var(--on-accent)" stroke-width="1.5" opacity=".4"/>
+        <text x="20" y="27" text-anchor="middle" font-size="19" font-weight="800" fill="var(--on-accent)" font-family="Bricolage Grotesque, DM Sans, sans-serif">₹</text>
+      </svg>
+      <h1> ValueFlow </h1>
+    </div>
+    <div class="tools">
+      <div class="swatches" role="group" aria-label="Colour theme">
+        <button class="sw" type="button" data-pal="orange" aria-pressed="true" aria-label="Orange theme" title="Orange"></button>
+        <button class="sw" type="button" data-pal="white" aria-pressed="false" aria-label="White theme" title="White"></button>
+        <button class="sw" type="button" data-pal="brown" aria-pressed="false" aria-label="Light brown theme" title="Light brown"></button>
+      </div>
+      <button class="ghost" type="button" id="openSettings">Budget &amp; settings</button>
+    </div>
+  </header>
+  <p class="hello" id="hello"></p>
+
+  <div class="banner" id="banner" hidden>
+    <span>You are looking at example spending so every chart has something to show. Add your own expenses, then clear the examples.</span>
+    <button class="btn small soft" type="button" id="clearSample">Clear example data</button>
+  </div>
+
+  <main class="grid">
+    <section class="card hero s7" style="--i:1" aria-label="Budget summary">
+      <div class="hero-main">
+        <div>
+          <p class="eyebrow">Safe to spend today</p>
+          <p class="hero-amt num" id="safeAmt">₹0</p>
+          <p class="hero-sub" id="heroSub"></p>
+          <span class="pill" id="pacePill"></span>
+        </div>
+        <div class="ring" id="ring">
+          <svg viewBox="0 0 200 200" aria-hidden="true">
+            <circle cx="100" cy="100" r="76" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="16"/>
+            <circle id="ringArc" cx="100" cy="100" r="76" fill="none" stroke="#fff" stroke-width="16" stroke-linecap="round" transform="rotate(-90 100 100)" stroke-dasharray="477.5" stroke-dashoffset="477.5"/>
+            <g id="paceTick"><line x1="100" y1="8" x2="100" y2="30" stroke="#fff" stroke-width="4" stroke-linecap="round"/></g>
+          </svg>
+          <div class="ring-c"><b class="num" id="ringPct">0%</b><span>of budget used</span></div>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div><b class="num" id="stSpent">₹0</b><span id="stSpentSub">Spent this cycle</span></div>
+        <div><b class="num" id="stAvg">₹0</b><span>Average per day</span></div>
+        <div><b class="num" id="stProj">₹0</b><span id="stProjSub">On pace to spend</span></div>
+      </div>
+    </section>
+
+    <section class="card s5" style="--i:2" aria-label="Add expense">
+      <div class="card-h"><div><h2>Add an expense</h2><p class="sub">Type it the way you would say it. The amount and category are picked up for you.</p></div></div>
+      <form id="addForm" autocomplete="off">
+        <label class="lbl" for="smart" style="margin-top:0">What did you spend?</label>
+        <div class="row">
+          <input class="field" id="smart" type="text" inputmode="text" placeholder="chai 40   ·   uber 250 transport   ·   rent 1.2k">
+          <button class="btn" type="submit">Add</button>
+        </div>
+        <div class="preview" id="preview" aria-live="polite"></div>
+        <span class="lbl">Category <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional, overrides auto-detect)</span></span>
+        <div class="chips" id="catChips"></div>
+        <span class="lbl">How did it feel?</span>
+        <div class="chips" id="moodChips"></div>
+        <div class="addbar">
+          <div class="grow">
+            <label class="lbl" for="dateIn">Date</label>
+            <input class="field" id="dateIn" type="date" style="padding:10px 13px;font-size:15px">
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <section class="card s8" style="--i:3" aria-label="Spending trend">
+      <div class="card-h">
+        <div><h2>Spending against your budget</h2><p class="sub" id="trendSub"></p></div>
+        <div class="legend"><span><i></i>This cycle</span><span><i class="l2"></i>Last cycle</span><span><i class="l3"></i>Budget pace</span></div>
+      </div>
+      <div class="chart" id="trend"></div>
+    </section>
+
+    <section class="card s4" style="--i:4" aria-label="Spending by category">
+      <div class="card-h"><div><h2>Where it goes</h2><p class="sub" id="donutSub">This cycle by category</p></div></div>
+      <div id="donut"></div>
+    </section>
+
+    <section class="card s8" style="--i:5" aria-label="Spending heatmap">
+      <div class="card-h"><div><h2>Twelve-week heatmap</h2><p class="sub">Darker means a bigger spending day. Tap a day to see what happened.</p></div></div>
+      <div class="hm">
+        <span></span><div class="hm-m" id="hmMonths"></div>
+        <div class="hm-d"><span>Mon</span><span></span><span>Wed</span><span></span><span>Fri</span><span></span><span>Sun</span></div>
+        <div class="hm-g" id="hmGrid"></div>
+      </div>
+      <div class="hm-key"><span>Less</span><span class="cell"></span><span class="cell l1"></span><span class="cell l2"></span><span class="cell l3"></span><span class="cell l4"></span><span>More</span></div>
+    </section>
+
+    <section class="card s4" style="--i:6" aria-label="Spending by weekday">
+      <div class="card-h"><div><h2>Your expensive weekdays</h2><p class="sub" id="weekSub"></p></div></div>
+      <div class="bars" id="bars"></div>
+    </section>
+
+    <section class="card s4 third" style="--i:7" aria-label="Spare change jar">
+      <div class="card-h"><div><h2>Spare-change jar</h2><p class="sub" id="jarSub"></p></div></div>
+      <div class="jar-row">
+        <div class="jar">
+          <svg viewBox="0 0 120 150" aria-hidden="true">
+            <defs><clipPath id="jarClip"><rect x="18" y="34" width="84" height="100" rx="22"/></clipPath></defs>
+            <g clip-path="url(#jarClip)">
+              <g class="liquid" id="liquid" style="transform:translateY(150px)">
+                <path class="wave2" d="M-60 0 q15 -7 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 V140 H-60 Z" fill="var(--brown)" opacity=".45"/>
+                <path class="wave1" d="M-60 4 q15 -9 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 V140 H-60 Z" fill="var(--accent)" opacity=".85"/>
+              </g>
+            </g>
+            <rect x="18" y="34" width="84" height="100" rx="22" fill="none" stroke="var(--brown)" stroke-width="3.5"/>
+            <rect x="30" y="14" width="60" height="16" rx="6" fill="var(--brown)"/>
+          </svg>
+        </div>
+        <div style="min-width:0">
+          <p class="big num" id="jarAmt">₹0</p>
+          <p class="note" id="jarNote"></p>
+        </div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="jarBar"></div></div>
+      <div class="row" style="justify-content:space-between;align-items:center;flex-wrap:wrap">
+        <span class="note" id="jarGoalTxt" style="margin:0"></span>
+        <button class="btn small soft" type="button" id="emptyJar">Move to savings</button>
+      </div>
+    </section>
+
+    <section class="card s4 third" style="--i:8" aria-label="Regret meter">
+      <div class="card-h"><div><h2>Regret meter</h2><p class="sub">Tap the feeling on any expense to change it.</p></div></div>
+      <p class="big num" id="regretPct">0%</p>
+      <p class="note" style="margin-top:2px" id="regretNote"></p>
+      <div class="mood-bar" id="moodBar"></div>
+      <div class="mood-list" id="moodList"></div>
+    </section>
+
+    <section class="card s4 third" style="--i:9" aria-label="No-spend streak">
+      <div class="card-h"><div><h2>No-spend streak</h2><p class="sub">Days in a row with nothing spent.</p></div></div>
+      <p class="big num" id="streakNum">0</p>
+      <p class="note" style="margin-top:2px" id="streakNote"></p>
+      <div class="dots" id="streakDots"></div>
+      <p class="note" id="streakKey">Last 14 days: filled means no spend.</p>
+    </section>
+
+    <section class="card s5" style="--i:10" aria-label="Category budgets">
+      <div class="card-h"><div><h2>Category budgets</h2><p class="sub">This cycle against the limits you set.</p></div></div>
+      <ul class="budgets" id="budgets"></ul>
+    </section>
+
+    <section class="card s7" style="--i:11" aria-label="Expense ledger">
+      <div class="card-h">
+        <div><h2>Ledger</h2><p class="sub" id="ledgerSub"></p></div>
+        <button class="btn small soft" type="button" id="openCsv">Export CSV</button>
+      </div>
+      <div class="filters">
+        <input class="field" id="search" type="search" placeholder="Search expenses" aria-label="Search expenses">
+        <div class="chips" id="filterChips"></div>
+        <span class="dayf" id="dayFilter" hidden></span>
+      </div>
+      <ul class="txs" id="txs"></ul>
+      <div class="more"><button class="btn small soft" type="button" id="moreBtn" hidden>Show more</button></div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="settings" hidden role="dialog" aria-modal="true" aria-labelledby="setH">
+  <div class="sheet">
+    <h2 id="setH">Budget &amp; settings</h2>
+    <p class="sub">Your budget runs in cycles, so it can start on payday instead of the 1st.</p>
+    <div class="form-grid">
+      <label for="setBudget">Budget per cycle (₹)<input class="field num" id="setBudget" type="number" min="0" step="500"></label>
+      <label for="setDay">Cycle starts on day<input class="field num" id="setDay" type="number" min="1" max="28" step="1"></label>
+      <label for="setRound">Round each expense up to<select class="field" id="setRound"><option value="5">next ₹5</option><option value="10">next ₹10</option><option value="20">next ₹20</option><option value="50">next ₹50</option><option value="100">next ₹100</option></select></label>
+      <label for="setGoal">Jar goal (₹)<input class="field num" id="setGoal" type="number" min="10" step="100"></label>
+    </div>
+    <span class="lbl">Category limits per cycle (₹)</span>
+    <div class="form-grid" id="limitGrid"></div>
+    <div class="sheet-actions">
+      <button class="btn soft" type="button" id="eraseAll">Erase all data</button>
+      <span style="display:flex;gap:10px"><button class="btn soft" type="button" data-close>Cancel</button><button class="btn" type="button" id="saveSettings">Save</button></span>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="csvModal" hidden role="dialog" aria-modal="true" aria-labelledby="csvH">
+  <div class="sheet">
+    <h2 id="csvH">Export CSV</h2>
+    <p class="sub">Copy this into a spreadsheet. It has every expense you have recorded.</p>
+    <textarea class="field" id="csvText" readonly style="margin-top:12px" aria-label="CSV data"></textarea>
+    <div class="sheet-actions" style="justify-content:flex-end">
+      <button class="btn soft" type="button" data-close>Close</button>
+      <button class="btn" type="button" id="copyCsv">Copy</button>
+    </div>
+  </div>
+</div>
+
+<div id="tip" role="tooltip"></div>
+<div id="toast" aria-live="polite"></div>
+
+<script src="script.js"></script>
